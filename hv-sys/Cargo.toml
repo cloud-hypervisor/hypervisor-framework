@@ -1,0 +1,10 @@
+[package]
+name = "hv-sys"
+version = "0.1.0"
+edition = "2018"
+description = "Low level Rust binding for Hypervisor Framework generated with bindgen"
+
+[dependencies]
+
+[build-dependencies]
+bindgen = "0.58"
