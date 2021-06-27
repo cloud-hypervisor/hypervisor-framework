@@ -1,0 +1,8 @@
+[package]
+name = "hv"
+version = "0.1.0"
+edition = "2018"
+description = "High level Rust bidings to Hypervisor Framework"
+
+[dependencies]
+hv-sys = { path = "../hv-sys", version = "0.1.0" }
