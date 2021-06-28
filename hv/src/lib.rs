@@ -20,7 +20,7 @@ macro_rules! call {
     ($f:expr) => {{
         let code = unsafe { $f };
         match code {
-            ::hv_sys::HV_SUCCESS => Ok(()),
+            0 => Ok(()),
             _ => Err(Error::from(code)),
         }
     }};
@@ -58,13 +58,17 @@ impl fmt::Display for Error {
 
 impl From<sys::hv_return_t> for Error {
     fn from(value: sys::hv_return_t) -> Self {
-        match value {
-            sys::HV_ERROR => Error::Unsuccessful,
-            sys::HV_BUSY => Error::Busy,
-            sys::HV_BAD_ARGUMENT => Error::BadArgument,
-            sys::HV_NO_RESOURCES => Error::NoResources,
-            sys::HV_NO_DEVICE => Error::NoDevice,
-            sys::HV_UNSUPPORTED => Error::Unsupported,
+        // Looks like bindgen gets confused sometimes and produces different code for these
+        // constants (`sys::HV_ERROR` vs `hv_return_t_HV_ERROR`) on different machines making things
+        // to fail. It's probably easier to just hardcode them.
+        let v = value as i64;
+        match v {
+            0xfae94001 => Error::Unsuccessful,
+            0xfae94002 => Error::Busy,
+            0xfae94003 => Error::BadArgument,
+            0xfae94005 => Error::NoResources,
+            0xfae94006 => Error::NoDevice,
+            0xfae9400f => Error::Unsupported,
             _ => Error::Unknown(value),
         }
     }

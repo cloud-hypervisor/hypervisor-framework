@@ -22,8 +22,8 @@ pub const VM_SPACE_DEFAULT: Space = sys::HV_VM_SPACE_DEFAULT;
 #[repr(u32)]
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum Capability {
-    VcpuMax = sys::HV_CAP_VCPUMAX,
-    AddrSpaceMax = sys::HV_CAP_ADDRSPACEMAX,
+    VcpuMax = 0,
+    AddrSpaceMax = 1,
 }
 
 bitflags::bitflags! {
