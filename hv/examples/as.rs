@@ -1,9 +1,7 @@
 // Apple Silicon example.
 // Adapted from https://github.com/zhuowei/FakeHVF/blob/main/simplevm.c
 
-use std::ptr;
-
-use hv::arm64::{Reg, VcpuExt};
+#![allow(dead_code)]
 
 static CODE: &[u8] = &[
     // Compute ((2 + 2) - 1)
@@ -27,10 +25,14 @@ const GUEST_ADDR: usize = 0x69420000;
 const RESULT_OFFSET: usize = 0x100;
 const GUEST_RESULT_ADDR: usize = GUEST_ADDR + RESULT_OFFSET;
 
+#[cfg(target_arch = "aarch64")]
+use hv::arm64::{Reg, VcpuExt};
+
+#[cfg(target_arch = "aarch64")]
 fn main() -> Result<(), hv::Error> {
     let load_addr = unsafe {
         libc::mmap(
-            ptr::null_mut(),
+            std::ptr::null_mut(),
             MEM_SIZE,
             libc::PROT_READ | libc::PROT_WRITE,
             libc::MAP_ANONYMOUS | libc::MAP_PRIVATE | libc::MAP_NORESERVE,
@@ -44,11 +46,11 @@ fn main() -> Result<(), hv::Error> {
     }
 
     unsafe {
-        ptr::copy_nonoverlapping(CODE.as_ptr(), load_addr, CODE.len());
+        std::ptr::copy_nonoverlapping(CODE.as_ptr(), load_addr, CODE.len());
     }
 
     // Init VM
-    hv::Vm::create_vm(ptr::null_mut()).expect("Failed to create VM");
+    hv::Vm::create_vm(std::ptr::null_mut()).expect("Failed to create VM");
 
     // Initialize guest memory
     hv::Vm::map(
@@ -62,7 +64,7 @@ fn main() -> Result<(), hv::Error> {
     // Create VCPU
     let cpu = hv::Vm::create_cpu().expect("Failed to create CPU");
 
-    // Register regs
+    // Set regs
     cpu.set_reg(Reg::PC, GUEST_ADDR as _)
         .expect("Failed to set PC reg");
 
@@ -90,3 +92,6 @@ fn main() -> Result<(), hv::Error> {
 
     Ok(())
 }
+
+#[cfg(target_arch = "x86_64")]
+fn main() {}

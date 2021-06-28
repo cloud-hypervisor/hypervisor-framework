@@ -13,7 +13,7 @@ fn main() {
         .allowlist_var("VM.*")
         .allowlist_var("IRQ.*")
         .derive_default(true)
-        .layout_tests(false)
+        .generate_comments(false)
         .generate()
         .expect("Failed to generate bindings")
         .write_to_file(out_path.join("bindings.rs"))

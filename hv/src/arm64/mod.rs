@@ -1,12 +1,9 @@
 //! Apple Silicon extensions support.
 
-use std::ptr;
-
 use crate::{call, sys, Error, Vcpu};
 
 mod regs;
 pub use regs::*;
-use std::process::exit;
 
 /// Injected interrupt type.
 #[repr(u32)]
@@ -186,7 +183,7 @@ impl VcpuExt for Vcpu {
 
     /// Returns the underlying `hv_vcpu_exit_t` structure.
     fn exit_info(&self) -> VcpuExit {
-        if self.exit == ptr::null() {
+        if self.exit.is_null() {
             VcpuExit::default()
         } else {
             unsafe { *self.exit }
