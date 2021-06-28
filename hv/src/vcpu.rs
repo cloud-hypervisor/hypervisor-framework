@@ -1,8 +1,7 @@
 use std::ffi::c_void;
 use std::mem;
 
-use crate::{call, sys, Error};
-use crate::{vmx, x86};
+use crate::{call, sys, vmx, x86, Error, Space};
 
 /// Represents a single virtual CPU.
 ///
@@ -16,6 +15,12 @@ impl Vcpu {
         let mut handle: sys::hv_vcpuid_t = 0;
         call!(sys::hv_vcpu_create(&mut handle, 0))?;
         Ok(Vcpu(handle))
+    }
+
+    /// Associates the vCPU instance with an allocated address space.
+    #[cfg(feature = "hv_10_15")]
+    pub fn set_space(&self, asid: Space) -> Result<(), Error> {
+        call!(sys::hv_vcpu_set_space(self.0, asid))
     }
 
     /// Forces flushing of cached vCPU state.
@@ -34,6 +39,7 @@ impl Vcpu {
     }
 
     /// Executes a vCPU until the given deadline.
+    #[cfg(feature = "hv_10_15")]
     pub fn run_until(&self, deadline: u64) -> Result<(), Error> {
         call!(sys::hv_vcpu_run_until(self.0, deadline))
     }
@@ -130,6 +136,7 @@ impl vmx::VcpuExt for Vcpu {
     }
 
     /// Returns the current value of a shadow VMCS field of a vCPU.
+    #[cfg(feature = "hv_10_15")]
     fn read_shadow_vmcs(&self, field: u32) -> Result<u64, Error> {
         let mut out = 0_u64;
         call!(sys::hv_vmx_vcpu_read_shadow_vmcs(self.0, field, &mut out))?;
@@ -137,7 +144,18 @@ impl vmx::VcpuExt for Vcpu {
     }
 
     /// Set the value of a shadow VMCS field of a vCPU.
+    #[cfg(feature = "hv_10_15")]
     fn write_shadow_vmcs(&self, field: u32, value: u64) -> Result<(), Error> {
         call!(sys::hv_vmx_vcpu_write_shadow_vmcs(self.0, field, value))
+    }
+
+    /// Set the access permissions of a shadow VMCS field of a vCPU.
+    #[cfg(feature = "hv_10_15")]
+    fn set_shadow_access(&self, field: u32, flags: crate::vmx::ShadowFlags) -> Result<(), Error> {
+        call!(sys::hv_vmx_vcpu_set_shadow_access(
+            self.0,
+            field,
+            flags as sys::hv_shadow_flags_t
+        ))
     }
 }

@@ -10,3 +10,7 @@ readme = "../README.md"
 
 [dependencies]
 hv-sys = { path = "../hv-sys", version = "0.1.0" }
+
+[features]
+hv_10_15 = []
+default = ["hv_10_15"]

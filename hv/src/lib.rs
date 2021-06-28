@@ -67,6 +67,7 @@ pub fn capability(cap: Capability) -> Result<u64, Error> {
 }
 
 /// Creates an additional guest address space for the current task.
+#[cfg(feature = "hv_10_15")]
 pub fn vm_space_create() -> Result<Space, Error> {
     let mut space: Space = 0;
     call!(sys::hv_vm_space_create(&mut space))?;
@@ -77,6 +78,7 @@ pub fn vm_space_create() -> Result<Space, Error> {
 ///
 /// # Arguments
 /// * `asid` - Address space ID
+#[cfg(feature = "hv_10_15")]
 pub fn vm_space_destroy(asid: Space) -> Result<(), Error> {
     call!(sys::hv_vm_space_destroy(asid))
 }
@@ -130,6 +132,7 @@ pub fn vm_protect(gpa: GPAddr, size: u64, flags: Memory) -> Result<(), Error> {
 /// * `gpa` - Page aligned address in the guest physical address space.
 /// * `size` - Size in bytes of the region to be mapped.
 /// * `flags` - READ, WRITE and EXECUTE permissions of the region.
+#[cfg(feature = "hv_10_15")]
 pub fn vm_map_space(
     asid: Space,
     uva: UVAddr,
@@ -152,6 +155,7 @@ pub fn vm_map_space(
 /// * `asid` - Address space ID.
 /// * `gpa` - Page aligned address in the guest physical address space.
 /// * `size` - Size in bytes of the region to be unmapped.
+#[cfg(feature = "hv_10_15")]
 pub fn vm_unmap_space(asid: Space, gpa: GPAddr, size: u64) -> Result<(), Error> {
     call!(sys::hv_vm_unmap_space(asid, gpa, size))
 }
@@ -163,6 +167,7 @@ pub fn vm_unmap_space(asid: Space, gpa: GPAddr, size: u64) -> Result<(), Error> 
 /// * `gpa` - Page aligned address in the guest physical address space.
 /// * `size` - Size in bytes of the region to be modified.
 /// * `flags` - New READ, WRITE and EXECUTE permissions of the region.
+#[cfg(feature = "hv_10_15")]
 pub fn vm_protect_space(asid: Space, gpa: GPAddr, size: u64, flags: Memory) -> Result<(), Error> {
     call!(sys::hv_vm_protect_space(
         asid,
