@@ -4,7 +4,10 @@
 
 `hv` is a high level Rust bindings for Hypervisor Framework.
 
-Build virtualization solutions on top of a lightweight hypervisor using Rust.
+Build virtualization solutions on top of a lightweight hypervisor using Rust:
+- Full Hypervisor Framework support.
+- Rusty API.
+- Supports Apple Silicon.
 
 [Documentation](https://developer.apple.com/documentation/hypervisor)
 
@@ -28,6 +31,13 @@ Use the following command to self sign your binary for local development:
 $ codesign --sign - --force --entitlements=example.entitlements ./binary
 ```
 
+### Rust
+
+Developed and tested on latest stable Rust (1.53.0+).
+
+Be sure to have [Xcode](https://developer.apple.com/xcode/) installed and don't forget to `xcode-select --install`,
+otherwise `bindgen` may fail to find Hypervisor headers.
+
 ## Example
 
 Here is basic "Hello world" example on Apple Silicon:
@@ -41,7 +51,7 @@ hv::Vm::map(load_addr, GUEST_ADDR as _, MEM_SIZE as _, hv::Memory::READ)?;
 // Create VCPU
 let cpu = hv::Vm::create_cpu()?;
 
-// Register regs
+// Set regs
 cpu.set_reg(Reg::PC, GUEST_ADDR)?;
 cpu.set_reg(Reg::X1, GUEST_RESULT_ADDR)?;
 
