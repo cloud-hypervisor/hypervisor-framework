@@ -9,11 +9,16 @@ fn main() {
         .header("wrapper.h")
         .clang_arg(format!("-F{}/System/Library/Frameworks", show_sdk_path())) // -F<directory> Add framework to the search path
         .allowlist_function("hv_.*")
+        .allowlist_var("HV.*")
+        .allowlist_var("VM.*")
+        .allowlist_var("IRQ.*")
         .layout_tests(false)
         .generate()
         .expect("Failed to generate bindings")
         .write_to_file(out_path.join("bindings.rs"))
         .expect("Failed to write bindings file");
+
+    println!("cargo:rustc-link-lib=framework=Hypervisor");
 }
 
 /// Execute `xcrun --sdk macosx --show-sdk-path` to locate MacOS SDK

@@ -2,7 +2,11 @@
 name = "hv-sys"
 version = "0.1.0"
 edition = "2018"
-description = "Low level Rust binding for Hypervisor Framework generated with bindgen"
+description = "Unsafe bindings for Hypervisor Framework generated with bindgen"
+authors = ["Maksym Pavlenko <pavlenko.maksym@gmail.com>"]
+repository = "https://github.com/mxpv/hv"
+license-file = "../LICENSE"
+readme = "../README.md"
 
 [dependencies]
 
