@@ -1,29 +1,20 @@
 use std::ffi::c_void;
 
-use crate::{call, sys, Addr, Error, GPAddr, Size, Vcpu};
-
-bitflags::bitflags! {
-    /// Guest physical memory region permissions.
-    pub struct Memory: u32 {
-        const READ = sys::HV_MEMORY_READ;
-        const WRITE = sys::HV_MEMORY_WRITE;
-        const EXEC = sys::HV_MEMORY_EXEC;
-    }
-}
+use crate::{call, sys, Addr, Error, GPAddr, Memory, Size, Vcpu};
 
 /// Vm is an entry point to Hypervisor Framework.
 #[derive(Debug)]
 pub struct Vm;
 
 #[cfg(target_arch = "x86_64")]
-pub type VmOptions = crate::x86::VmOptions;
+pub type Options = crate::x86::VmOptions;
 
 #[cfg(target_arch = "aarch64")]
-pub type VmOptions = sys::hv_vm_config_t;
+pub type Options = sys::hv_vm_config_t;
 
 impl Vm {
     /// Creates a VM instance for the current process.
-    pub fn create_vm(options: VmOptions) -> Result<(), Error> {
+    pub fn create_vm(options: Options) -> Result<(), Error> {
         #[cfg(target_arch = "x86_64")]
         let options = options.bits();
 
@@ -54,7 +45,7 @@ impl Vm {
             uva as *mut c_void,
             gpa,
             size,
-            flags.bits().into()
+            flags.bits() as _
         ))
     }
 

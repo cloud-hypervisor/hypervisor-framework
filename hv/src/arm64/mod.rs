@@ -6,6 +6,7 @@ use crate::{call, sys, Error, Vcpu};
 
 mod regs;
 pub use regs::*;
+use std::process::exit;
 
 /// Injected interrupt type.
 #[repr(u32)]
