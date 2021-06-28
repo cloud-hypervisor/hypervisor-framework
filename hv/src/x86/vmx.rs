@@ -1,6 +1,6 @@
 //! VMX extensions.
 
-use crate::{call, sys, Error};
+use crate::{call, sys, Error, Vcpu};
 
 /// Enum type of VMX cabability fields
 #[repr(u32)]
@@ -55,6 +55,52 @@ pub trait VCpuVmxExt {
     /// Set the access permissions of a shadow VMCS field of a vCPU.
     #[cfg(feature = "hv_10_15")]
     fn set_shadow_access(&self, field: Vmcs, flags: ShadowFlags) -> Result<(), Error>;
+}
+
+impl VCpuVmxExt for Vcpu {
+    /// Returns the current value of a VMCS field of a vCPU.
+    fn read_vmcs(&self, field: Vmcs) -> Result<u64, Error> {
+        let mut out = 0_u64;
+        call!(sys::hv_vmx_vcpu_read_vmcs(self.0, field as u32, &mut out))?;
+        Ok(out)
+    }
+
+    /// Set the value of a VMCS field of a vCPU.
+    fn write_vmcs(&self, field: Vmcs, value: u64) -> Result<(), Error> {
+        call!(sys::hv_vmx_vcpu_write_vmcs(self.0, field as u32, value))
+    }
+
+    /// Returns the current value of a shadow VMCS field of a vCPU.
+    #[cfg(feature = "hv_10_15")]
+    fn read_shadow_vmcs(&self, field: Vmcs) -> Result<u64, Error> {
+        let mut out = 0_u64;
+        call!(sys::hv_vmx_vcpu_read_shadow_vmcs(
+            self.0,
+            field as u32,
+            &mut out
+        ))?;
+        Ok(out)
+    }
+
+    /// Set the value of a shadow VMCS field of a vCPU.
+    #[cfg(feature = "hv_10_15")]
+    fn write_shadow_vmcs(&self, field: Vmcs, value: u64) -> Result<(), Error> {
+        call!(sys::hv_vmx_vcpu_write_shadow_vmcs(
+            self.0,
+            field as u32,
+            value
+        ))
+    }
+
+    /// Set the access permissions of a shadow VMCS field of a vCPU.
+    #[cfg(feature = "hv_10_15")]
+    fn set_shadow_access(&self, field: Vmcs, flags: ShadowFlags) -> Result<(), Error> {
+        call!(sys::hv_vmx_vcpu_set_shadow_access(
+            self.0,
+            field as u32,
+            flags.bits() as u64
+        ))
+    }
 }
 
 /// Virtual Machine Control Structure (VMCS) Field IDs.

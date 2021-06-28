@@ -1,14 +1,13 @@
-fn main() -> Result<(), hv::Error> {
-    hv::Vm::create(hv::VmOptions::default())?;
+use hv::x86::{Capability, VmExt, VmOptions};
 
-    println!(
-        "Max vCPUs: {}",
-        hv::Vm::capability(hv::Capability::VCPU_MAX)?
-    );
+fn main() -> Result<(), hv::Error> {
+    hv::Vm::create(VmOptions::default())?;
+
+    println!("Max vCPUs: {}", hv::Vm::capability(Capability::VcpuMax)?);
 
     println!(
         "Available address spaces: {}",
-        hv::Vm::capability(hv::Capability::ADDR_SPAC_EMAX)?
+        hv::Vm::capability(Capability::AddrSpaceMax)?
     );
 
     hv::Vm::destroy()?;
