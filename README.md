@@ -27,3 +27,31 @@ Use the following command to self sign your binary for local development:
 ```bash
 $ codesign --sign - --force --entitlements=example.entitlements ./binary
 ```
+
+## Example
+
+Here is basic "Hello world" example on Apple Silicon:
+```rust
+// Init VM
+hv::Vm::create_vm(ptr::null_mut())?;
+
+// Initialize guest memory
+hv::Vm::map(load_addr, GUEST_ADDR as _, MEM_SIZE as _, hv::Memory::READ)?;
+
+// Create VCPU
+let cpu = hv::Vm::create_cpu()?;
+
+// Register regs
+cpu.set_reg(Reg::PC, GUEST_ADDR)?;
+cpu.set_reg(Reg::X1, GUEST_RESULT_ADDR)?;
+
+// Run CPU
+loop {
+    cpu.run()?;
+
+    let info = cpu.exit_info();
+    println!("{:?}", info);
+
+    break;
+}
+```
