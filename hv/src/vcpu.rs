@@ -11,7 +11,7 @@ pub struct Vcpu(sys::hv_vcpuid_t);
 
 impl Vcpu {
     /// Creates a vCPU instance for the current thread.
-    pub fn new() -> Result<Vcpu, Error> {
+    pub(crate) fn new() -> Result<Vcpu, Error> {
         let mut handle: sys::hv_vcpuid_t = 0;
         call!(sys::hv_vcpu_create(&mut handle, 0))?;
         Ok(Vcpu(handle))

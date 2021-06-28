@@ -70,123 +70,134 @@ impl Default for VmOptions {
     }
 }
 
-/// Creates a VM instance for the current process.
-pub fn vm_create(options: VmOptions) -> Result<(), Error> {
-    call!(sys::hv_vm_create(options.bits))
-}
+/// Vm is an entry point to Hypervisor Framework.
+#[derive(Debug)]
+pub struct Vm;
 
-/// Gets the value of capabilities of the system.
-pub fn capability(cap: Capability) -> Result<u64, Error> {
-    let mut out = 0_u64;
-    call!(sys::hv_capability(cap.bits as u64, &mut out))?;
-    Ok(out)
-}
+impl Vm {
+    /// Creates a VM instance for the current process.
+    pub fn create(options: VmOptions) -> Result<(), Error> {
+        call!(sys::hv_vm_create(options.bits))
+    }
 
-/// Creates an additional guest address space for the current task.
-#[cfg(feature = "hv_10_15")]
-pub fn vm_space_create() -> Result<Space, Error> {
-    let mut space: Space = 0;
-    call!(sys::hv_vm_space_create(&mut space))?;
-    Ok(space)
-}
+    /// Gets the value of capabilities of the system.
+    pub fn capability(cap: Capability) -> Result<u64, Error> {
+        let mut out = 0_u64;
+        call!(sys::hv_capability(cap.bits as u64, &mut out))?;
+        Ok(out)
+    }
 
-/// Destroys the address space instance associated with the current task.
-///
-/// # Arguments
-/// * `asid` - Address space ID
-#[cfg(feature = "hv_10_15")]
-pub fn vm_space_destroy(asid: Space) -> Result<(), Error> {
-    call!(sys::hv_vm_space_destroy(asid))
-}
+    /// Creates an additional guest address space for the current task.
+    #[cfg(feature = "hv_10_15")]
+    pub fn space_create() -> Result<Space, Error> {
+        let mut space: Space = 0;
+        call!(sys::hv_vm_space_create(&mut space))?;
+        Ok(space)
+    }
 
-/// Maps a region in the virtual address space of the current task into the guest physical
-/// address space of the VM.
-///
-/// # Arguments
-/// * `uva` - Page aligned virtual address in the current task.
-/// * `gpa` - Page aligned address in the guest physical address space.
-/// * `size` - Size in bytes of the region to be mapped.
-/// * `flags` - READ, WRITE and EXECUTE permissions of the region
-pub fn vm_map(uva: UVAddr, gpa: GPAddr, size: u64, flags: Memory) -> Result<(), Error> {
-    call!(sys::hv_vm_map(uva, gpa, size, flags.bits.into()))
-}
+    /// Destroys the address space instance associated with the current task.
+    ///
+    /// # Arguments
+    /// * `asid` - Address space ID
+    #[cfg(feature = "hv_10_15")]
+    pub fn space_destroy(asid: Space) -> Result<(), Error> {
+        call!(sys::hv_vm_space_destroy(asid))
+    }
 
-/// Unmaps a region in the guest physical address space of the VM
-///
-/// # Arguments
-/// * `gpa` - Page aligned address in the guest physical address space.
-/// * `size` - Size in bytes of the region to be unmapped.
-pub fn vm_unmap(gpa: GPAddr, size: u64) -> Result<(), Error> {
-    call!(sys::hv_vm_unmap(gpa, size))
-}
+    /// Maps a region in the virtual address space of the current task into the guest physical
+    /// address space of the VM.
+    ///
+    /// # Arguments
+    /// * `uva` - Page aligned virtual address in the current task.
+    /// * `gpa` - Page aligned address in the guest physical address space.
+    /// * `size` - Size in bytes of the region to be mapped.
+    /// * `flags` - READ, WRITE and EXECUTE permissions of the region
+    pub fn map(uva: UVAddr, gpa: GPAddr, size: u64, flags: Memory) -> Result<(), Error> {
+        call!(sys::hv_vm_map(uva, gpa, size, flags.bits.into()))
+    }
 
-/// Modifies the permissions of a region in the guest physical address space of the VM.
-///
-/// # Arguments
-/// * `gpa` - Page aligned address in the guest physical address space.
-/// * `size` - Size in bytes of the region to be modified.
-/// * `flags` - New READ, WRITE and EXECUTE permissions of the region.
-pub fn vm_protect(gpa: GPAddr, size: u64, flags: Memory) -> Result<(), Error> {
-    call!(sys::hv_vm_protect(gpa, size, flags.bits.into()))
-}
+    /// Unmaps a region in the guest physical address space of the VM
+    ///
+    /// # Arguments
+    /// * `gpa` - Page aligned address in the guest physical address space.
+    /// * `size` - Size in bytes of the region to be unmapped.
+    pub fn unmap(gpa: GPAddr, size: u64) -> Result<(), Error> {
+        call!(sys::hv_vm_unmap(gpa, size))
+    }
 
-/// Maps a region in the virtual address space of the current task
-/// into a guest physical address space of the VM.
-///
-/// # Arguments
-/// * `asid` - Address space ID.
-/// * `uva` - Page aligned virtual address in the current task.
-/// * `gpa` - Page aligned address in the guest physical address space.
-/// * `size` - Size in bytes of the region to be mapped.
-/// * `flags` - READ, WRITE and EXECUTE permissions of the region.
-#[cfg(feature = "hv_10_15")]
-pub fn vm_map_space(
-    asid: Space,
-    uva: UVAddr,
-    gpa: GPAddr,
-    size: u64,
-    flags: Memory,
-) -> Result<(), Error> {
-    call!(sys::hv_vm_map_space(
-        asid,
-        uva,
-        gpa,
-        size,
-        flags.bits.into()
-    ))
-}
+    /// Modifies the permissions of a region in the guest physical address space of the VM.
+    ///
+    /// # Arguments
+    /// * `gpa` - Page aligned address in the guest physical address space.
+    /// * `size` - Size in bytes of the region to be modified.
+    /// * `flags` - New READ, WRITE and EXECUTE permissions of the region.
+    pub fn protect(gpa: GPAddr, size: u64, flags: Memory) -> Result<(), Error> {
+        call!(sys::hv_vm_protect(gpa, size, flags.bits.into()))
+    }
 
-/// Unmaps a region in a guest physical address space of the VM.
-///
-/// # Arguments
-/// * `asid` - Address space ID.
-/// * `gpa` - Page aligned address in the guest physical address space.
-/// * `size` - Size in bytes of the region to be unmapped.
-#[cfg(feature = "hv_10_15")]
-pub fn vm_unmap_space(asid: Space, gpa: GPAddr, size: u64) -> Result<(), Error> {
-    call!(sys::hv_vm_unmap_space(asid, gpa, size))
-}
+    /// Maps a region in the virtual address space of the current task
+    /// into a guest physical address space of the VM.
+    ///
+    /// # Arguments
+    /// * `asid` - Address space ID.
+    /// * `uva` - Page aligned virtual address in the current task.
+    /// * `gpa` - Page aligned address in the guest physical address space.
+    /// * `size` - Size in bytes of the region to be mapped.
+    /// * `flags` - READ, WRITE and EXECUTE permissions of the region.
+    #[cfg(feature = "hv_10_15")]
+    pub fn map_space(
+        asid: Space,
+        uva: UVAddr,
+        gpa: GPAddr,
+        size: u64,
+        flags: Memory,
+    ) -> Result<(), Error> {
+        call!(sys::hv_vm_map_space(
+            asid,
+            uva,
+            gpa,
+            size,
+            flags.bits.into()
+        ))
+    }
 
-/// Modifies the permissions of a region in a guest physical address space of the VM.
-///
-/// # Arguments
-/// * `asid` - Address space ID.
-/// * `gpa` - Page aligned address in the guest physical address space.
-/// * `size` - Size in bytes of the region to be modified.
-/// * `flags` - New READ, WRITE and EXECUTE permissions of the region.
-#[cfg(feature = "hv_10_15")]
-pub fn vm_protect_space(asid: Space, gpa: GPAddr, size: u64, flags: Memory) -> Result<(), Error> {
-    call!(sys::hv_vm_protect_space(asid, gpa, size, flags.bits.into()))
-}
+    /// Unmaps a region in a guest physical address space of the VM.
+    ///
+    /// # Arguments
+    /// * `asid` - Address space ID.
+    /// * `gpa` - Page aligned address in the guest physical address space.
+    /// * `size` - Size in bytes of the region to be unmapped.
+    #[cfg(feature = "hv_10_15")]
+    pub fn unmap_space(asid: Space, gpa: GPAddr, size: u64) -> Result<(), Error> {
+        call!(sys::hv_vm_unmap_space(asid, gpa, size))
+    }
 
-/// Synchronizes guest TSC across all vCPUs.
-pub fn vm_sync_tsc(tcs: u64) -> Result<(), Error> {
-    call!(sys::hv_vm_sync_tsc(tcs))
-}
+    /// Modifies the permissions of a region in a guest physical address space of the VM.
+    ///
+    /// # Arguments
+    /// * `asid` - Address space ID.
+    /// * `gpa` - Page aligned address in the guest physical address space.
+    /// * `size` - Size in bytes of the region to be modified.
+    /// * `flags` - New READ, WRITE and EXECUTE permissions of the region.
+    #[cfg(feature = "hv_10_15")]
+    pub fn protect_space(asid: Space, gpa: GPAddr, size: u64, flags: Memory) -> Result<(), Error> {
+        call!(sys::hv_vm_protect_space(asid, gpa, size, flags.bits.into()))
+    }
 
-/// Destroys the VM instance associated with the current process.
-pub fn vm_destroy() -> Result<(), Error> {
-    call!(sys::hv_vm_destroy())
+    /// Synchronizes guest TSC across all vCPUs.
+    pub fn sync_tsc(tcs: u64) -> Result<(), Error> {
+        call!(sys::hv_vm_sync_tsc(tcs))
+    }
+
+    /// Creates a vCPU instance for the current thread.
+    pub fn create_cpu() -> Result<Vcpu, Error> {
+        Vcpu::new()
+    }
+
+    /// Destroys the VM instance associated with the current process.
+    pub fn destroy() -> Result<(), Error> {
+        call!(sys::hv_vm_destroy())
+    }
 }
 
 /// The return type of framework functions.

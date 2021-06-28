@@ -1,15 +1,17 @@
-fn main() {
-    hv::vm_create(hv::VmOptions::default()).unwrap();
+fn main() -> Result<(), hv::Error> {
+    hv::Vm::create(hv::VmOptions::default())?;
 
     println!(
         "Max vCPUs: {}",
-        hv::capability(hv::Capability::VCPU_MAX).unwrap()
+        hv::Vm::capability(hv::Capability::VCPU_MAX)?
     );
 
     println!(
         "Available address spaces: {}",
-        hv::capability(hv::Capability::ADDR_SPAC_EMAX).unwrap()
+        hv::Vm::capability(hv::Capability::ADDR_SPAC_EMAX)?
     );
 
-    hv::vm_destroy().unwrap();
+    hv::Vm::destroy()?;
+
+    Ok(())
 }
