@@ -1,6 +1,7 @@
 //! `hv` is a high level safe Rust crate to access Hypervisor Framework.
 
 use std::error;
+use std::ffi::c_void;
 use std::fmt;
 
 /// Low level access to generated bindings.
@@ -13,6 +14,14 @@ pub mod vm;
 
 #[cfg(target_arch = "x86_64")]
 pub mod x86;
+
+pub type Size = u64;
+
+/// Type of a user virtual address.
+pub type Addr = *const c_void;
+
+/// Type of a guest physical address.
+pub type GPAddr = u64;
 
 /// Helper macro to call unsafe Hypervisor functions and map returned error codes to [Error] type.
 #[macro_export]

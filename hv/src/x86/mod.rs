@@ -3,15 +3,11 @@
 use std::ffi::c_void;
 use std::mem;
 
-use crate::{call, sys, vm::Memory, Error, Vcpu, Vm};
+use crate::{call, sys, vm::Memory, Addr, Error, GPAddr, Size, Vcpu, Vm};
 
 pub mod vmx;
 
-/// Type of a user virtual address.
-pub type UVAddr = sys::hv_uvaddr_t;
-
-/// Type of a guest physical address.
-pub type GPAddr = sys::hv_gpaddr_t;
+pub type UVAddr = Addr;
 
 /// Type of a guest address space.
 pub type Space = sys::hv_vm_space_t;
@@ -62,31 +58,6 @@ pub trait VmExt {
     #[cfg(feature = "hv_10_15")]
     fn space_destroy(asid: Space) -> Result<(), Error>;
 
-    /// Maps a region in the virtual address space of the current task into the guest physical
-    /// address space of the VM.
-    ///
-    /// # Arguments
-    /// * `uva` - Page aligned virtual address in the current task.
-    /// * `gpa` - Page aligned address in the guest physical address space.
-    /// * `size` - Size in bytes of the region to be mapped.
-    /// * `flags` - READ, WRITE and EXECUTE permissions of the region
-    fn map(uva: UVAddr, gpa: GPAddr, size: u64, flags: Memory) -> Result<(), Error>;
-
-    /// Unmaps a region in the guest physical address space of the VM
-    ///
-    /// # Arguments
-    /// * `gpa` - Page aligned address in the guest physical address space.
-    /// * `size` - Size in bytes of the region to be unmapped.
-    fn unmap(gpa: GPAddr, size: u64) -> Result<(), Error>;
-
-    /// Modifies the permissions of a region in the guest physical address space of the VM.
-    ///
-    /// # Arguments
-    /// * `gpa` - Page aligned address in the guest physical address space.
-    /// * `size` - Size in bytes of the region to be modified.
-    /// * `flags` - New READ, WRITE and EXECUTE permissions of the region.
-    fn protect(gpa: GPAddr, size: u64, flags: Memory) -> Result<(), Error>;
-
     /// Maps a region in the virtual address space of the current task
     /// into a guest physical address space of the VM.
     ///
@@ -112,7 +83,7 @@ pub trait VmExt {
     /// * `gpa` - Page aligned address in the guest physical address space.
     /// * `size` - Size in bytes of the region to be unmapped.
     #[cfg(feature = "hv_10_15")]
-    fn unmap_space(asid: Space, gpa: GPAddr, size: u64) -> Result<(), Error>;
+    fn unmap_space(asid: Space, gpa: GPAddr, size: Size) -> Result<(), Error>;
 
     /// Modifies the permissions of a region in a guest physical address space of the VM.
     ///
@@ -122,7 +93,7 @@ pub trait VmExt {
     /// * `size` - Size in bytes of the region to be modified.
     /// * `flags` - New READ, WRITE and EXECUTE permissions of the region.
     #[cfg(feature = "hv_10_15")]
-    fn protect_space(asid: Space, gpa: GPAddr, size: u64, flags: Memory) -> Result<(), Error>;
+    fn protect_space(asid: Space, gpa: GPAddr, size: Size, flags: Memory) -> Result<(), Error>;
 
     /// Synchronizes guest TSC across all vCPUs.
     fn sync_tsc(tcs: u64) -> Result<(), Error>;
@@ -130,6 +101,10 @@ pub trait VmExt {
 
 /// x86 specific routines for vCPU.
 pub trait VcpuExt {
+    /// Executes a vCPU until the given deadline.
+    #[cfg(feature = "hv_10_15")]
+    fn run_until(&self, deadline: u64) -> Result<(), Error>;
+
     /// Forces flushing of cached vCPU state.
     fn flush(&self) -> Result<(), Error>;
 
@@ -196,37 +171,6 @@ impl VmExt for Vm {
         call!(sys::hv_vm_space_destroy(asid))
     }
 
-    /// Maps a region in the virtual address space of the current task into the guest physical
-    /// address space of the VM.
-    ///
-    /// # Arguments
-    /// * `uva` - Page aligned virtual address in the current task.
-    /// * `gpa` - Page aligned address in the guest physical address space.
-    /// * `size` - Size in bytes of the region to be mapped.
-    /// * `flags` - READ, WRITE and EXECUTE permissions of the region
-    fn map(uva: UVAddr, gpa: GPAddr, size: u64, flags: Memory) -> Result<(), Error> {
-        call!(sys::hv_vm_map(uva, gpa, size, flags.bits().into()))
-    }
-
-    /// Unmaps a region in the guest physical address space of the VM
-    ///
-    /// # Arguments
-    /// * `gpa` - Page aligned address in the guest physical address space.
-    /// * `size` - Size in bytes of the region to be unmapped.
-    fn unmap(gpa: GPAddr, size: u64) -> Result<(), Error> {
-        call!(sys::hv_vm_unmap(gpa, size))
-    }
-
-    /// Modifies the permissions of a region in the guest physical address space of the VM.
-    ///
-    /// # Arguments
-    /// * `gpa` - Page aligned address in the guest physical address space.
-    /// * `size` - Size in bytes of the region to be modified.
-    /// * `flags` - New READ, WRITE and EXECUTE permissions of the region.
-    fn protect(gpa: GPAddr, size: u64, flags: Memory) -> Result<(), Error> {
-        call!(sys::hv_vm_protect(gpa, size, flags.bits().into()))
-    }
-
     /// Maps a region in the virtual address space of the current task
     /// into a guest physical address space of the VM.
     ///
@@ -241,7 +185,7 @@ impl VmExt for Vm {
         asid: Space,
         uva: UVAddr,
         gpa: GPAddr,
-        size: u64,
+        size: Size,
         flags: Memory,
     ) -> Result<(), Error> {
         call!(sys::hv_vm_map_space(
@@ -260,7 +204,7 @@ impl VmExt for Vm {
     /// * `gpa` - Page aligned address in the guest physical address space.
     /// * `size` - Size in bytes of the region to be unmapped.
     #[cfg(feature = "hv_10_15")]
-    fn unmap_space(asid: Space, gpa: GPAddr, size: u64) -> Result<(), Error> {
+    fn unmap_space(asid: Space, gpa: GPAddr, size: Size) -> Result<(), Error> {
         call!(sys::hv_vm_unmap_space(asid, gpa, size))
     }
 
@@ -272,7 +216,7 @@ impl VmExt for Vm {
     /// * `size` - Size in bytes of the region to be modified.
     /// * `flags` - New READ, WRITE and EXECUTE permissions of the region.
     #[cfg(feature = "hv_10_15")]
-    fn protect_space(asid: Space, gpa: GPAddr, size: u64, flags: Memory) -> Result<(), Error> {
+    fn protect_space(asid: Space, gpa: GPAddr, size: Size, flags: Memory) -> Result<(), Error> {
         call!(sys::hv_vm_protect_space(
             asid,
             gpa,
@@ -288,49 +232,55 @@ impl VmExt for Vm {
 }
 
 impl VcpuExt for Vcpu {
+    /// Executes a vCPU until the given deadline.
+    #[cfg(feature = "hv_10_15")]
+    fn run_until(&self, deadline: u64) -> Result<(), Error> {
+        call!(sys::hv_vcpu_run_until(self.cpu, deadline))
+    }
+
     /// Forces flushing of cached vCPU state.
     fn flush(&self) -> Result<(), Error> {
-        call!(sys::hv_vcpu_flush(self.0))
+        call!(sys::hv_vcpu_flush(self.cpu))
     }
 
     /// Invalidates the TLB of a vCPU.
     fn invalidate_tlb(&self) -> Result<(), Error> {
-        call!(sys::hv_vcpu_invalidate_tlb(self.0))
+        call!(sys::hv_vcpu_invalidate_tlb(self.cpu))
     }
 
     /// Associates the vCPU instance with an allocated address space.
     #[cfg(feature = "hv_10_15")]
     fn set_space(&self, asid: Space) -> Result<(), Error> {
-        call!(sys::hv_vcpu_set_space(self.0, asid))
+        call!(sys::hv_vcpu_set_space(self.cpu, asid))
     }
 
     /// Forces an immediate VMEXIT of the vCPU.
     fn interrupt(&self) -> Result<(), Error> {
-        call!(sys::hv_vcpu_interrupt(mem::transmute(&self.0), 1))
+        call!(sys::hv_vcpu_interrupt(mem::transmute(&self.cpu), 1))
     }
 
     /// Enables an MSR to be used natively by the VM.
     fn enable_native_msr(&self, msr: u32, enable: bool) -> Result<(), Error> {
-        call!(sys::hv_vcpu_enable_native_msr(self.0, msr, enable))
+        call!(sys::hv_vcpu_enable_native_msr(self.cpu, msr, enable))
     }
 
     /// Returns the current value of an MSR of a vCPU.
     fn read_msr(&self, msr: u32) -> Result<u64, Error> {
         let mut value = 0_u64;
-        call!(sys::hv_vcpu_read_msr(self.0, msr, &mut value))?;
+        call!(sys::hv_vcpu_read_msr(self.cpu, msr, &mut value))?;
         Ok(value)
     }
 
     /// Set the value of an MSR of a vCPU.
     fn write_msr(&self, msr: u32, value: u64) -> Result<(), Error> {
-        call!(sys::hv_vcpu_write_msr(self.0, msr, value))
+        call!(sys::hv_vcpu_write_msr(self.cpu, msr, value))
     }
 
     /// Returns the current value of an architectural x86 register of a vCPU.
     fn read_register(&self, reg: Reg) -> Result<u64, Error> {
         let mut value = 0_u64;
         call!(sys::hv_vcpu_read_register(
-            self.0,
+            self.cpu,
             reg as sys::hv_x86_reg_t,
             &mut value
         ))?;
@@ -340,7 +290,7 @@ impl VcpuExt for Vcpu {
     /// Set the value of an architectural x86 register of a vCPU.
     fn write_register(&self, reg: Reg, value: u64) -> Result<(), Error> {
         call!(sys::hv_vcpu_write_register(
-            self.0,
+            self.cpu,
             reg as sys::hv_x86_reg_t,
             value
         ))
@@ -350,7 +300,7 @@ impl VcpuExt for Vcpu {
     /// Structure and size are defined by the XSAVE feature set of the host processor.
     fn read_fpstate(&self, buffer: &mut [u8]) -> Result<(), Error> {
         call!(sys::hv_vcpu_read_fpstate(
-            self.0,
+            self.cpu,
             buffer.as_mut_ptr() as *mut c_void,
             buffer.len() as u64
         ))
@@ -359,7 +309,7 @@ impl VcpuExt for Vcpu {
     /// Sets the architectural x86 floating point and SIMD state of a vCPU.
     fn write_fpstate(&self, buffer: &[u8]) -> Result<(), Error> {
         call!(sys::hv_vcpu_write_fpstate(
-            self.0,
+            self.cpu,
             buffer.as_ptr() as *mut c_void,
             buffer.len() as u64
         ))
