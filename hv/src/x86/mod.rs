@@ -3,7 +3,7 @@
 use std::ffi::c_void;
 use std::mem;
 
-use crate::{call, sys, vm::Memory, Addr, Error, GPAddr, Size, Vcpu, Vm};
+use crate::{call, sys, Addr, Error, GPAddr, Memory, Size, Vcpu, Vm};
 
 pub mod vmx;
 
@@ -182,7 +182,7 @@ impl VmExt for Vm {
     ) -> Result<(), Error> {
         call!(sys::hv_vm_map_space(
             asid,
-            uva,
+            uva as *const c_void,
             gpa,
             size,
             flags.bits().into()

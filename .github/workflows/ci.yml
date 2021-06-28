@@ -10,6 +10,6 @@ jobs:
       - run: rustup update stable
       - run: rustup component add rustfmt clippy
       - run: cargo fmt --all -- --check --files-with-diff
-      - run: cargo clippy --all-targets --all-features -- -D warnings
-      - run: cargo test --all-targets --all-features
+      - run: cargo clippy --all-features -- -D warnings
+      - run: cargo test --all-features
       - run: cargo check
