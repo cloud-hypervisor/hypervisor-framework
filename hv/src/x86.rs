@@ -3,7 +3,7 @@
 use crate::{sys, Error};
 
 /// x86 specific routines for vCPU.
-pub trait VcpuExt {
+pub trait VCpuX86Ext {
     /// Returns the current value of an architectural x86 register of a vCPU.
     fn read_register(&self, reg: Reg) -> Result<u64, Error>;
 

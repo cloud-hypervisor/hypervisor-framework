@@ -24,13 +24,12 @@ macro_rules! call {
     }};
 }
 
-/// The type of system capabilities.
-#[repr(u32)]
-#[non_exhaustive]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum Capability {
-    VCpuMax = sys::HV_CAP_VCPUMAX,
-    AddrSpaceMax = sys::HV_CAP_ADDRSPACEMAX,
+bitflags::bitflags! {
+    /// The type of system capabilities.
+    pub struct Capability: u32 {
+        const VCPU_MAX = sys::HV_CAP_VCPUMAX;
+        const ADDR_SPAC_EMAX = sys::HV_CAP_ADDRSPACEMAX;
+    }
 }
 
 /// Type of a user virtual address.
@@ -44,25 +43,42 @@ pub type Space = sys::hv_vm_space_t;
 
 pub const VM_SPACE_DEFAULT: Space = sys::HV_VM_SPACE_DEFAULT;
 
-/// Guest physical memory region permissions.
-#[repr(u32)]
-#[non_exhaustive]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum Memory {
-    Read = sys::HV_MEMORY_READ,
-    Write = sys::HV_MEMORY_WRITE,
-    Exec = sys::HV_MEMORY_EXEC,
+bitflags::bitflags! {
+    /// Guest physical memory region permissions.
+    pub struct Memory: u32 {
+        const READ = sys::HV_MEMORY_READ;
+        const WRITE = sys::HV_MEMORY_WRITE;
+        const EXEC = sys::HV_MEMORY_EXEC;
+    }
+}
+
+bitflags::bitflags! {
+    pub struct VmOptions: u64 {
+        const DEFAULT = sys::HV_VM_DEFAULT as _;
+        const SPECIFY_MITIGATIONS = sys::HV_VM_SPECIFY_MITIGATIONS as _;
+        const MITIGATION_A_ENABLE = sys::HV_VM_MITIGATION_A_ENABLE as _;
+        const MITIGATION_B_ENABLE = sys::HV_VM_MITIGATION_B_ENABLE as _;
+        const MITIGATION_C_ENABLE = sys::HV_VM_MITIGATION_C_ENABLE as _;
+        const MITIGATION_D_ENABLE = sys::HV_VM_MITIGATION_D_ENABLE as _;
+        const MITIGATION_E_ENABLE = sys::HV_VM_MITIGATION_E_ENABLE as _;
+    }
+}
+
+impl Default for VmOptions {
+    fn default() -> Self {
+        VmOptions::DEFAULT
+    }
 }
 
 /// Creates a VM instance for the current process.
-pub fn vm_create() -> Result<(), Error> {
-    call!(sys::hv_vm_create(0))
+pub fn vm_create(options: VmOptions) -> Result<(), Error> {
+    call!(sys::hv_vm_create(options.bits))
 }
 
 /// Gets the value of capabilities of the system.
 pub fn capability(cap: Capability) -> Result<u64, Error> {
     let mut out = 0_u64;
-    call!(sys::hv_capability(cap as sys::hv_capability_t, &mut out))?;
+    call!(sys::hv_capability(cap.bits as u64, &mut out))?;
     Ok(out)
 }
 
@@ -92,12 +108,7 @@ pub fn vm_space_destroy(asid: Space) -> Result<(), Error> {
 /// * `size` - Size in bytes of the region to be mapped.
 /// * `flags` - READ, WRITE and EXECUTE permissions of the region
 pub fn vm_map(uva: UVAddr, gpa: GPAddr, size: u64, flags: Memory) -> Result<(), Error> {
-    call!(sys::hv_vm_map(
-        uva,
-        gpa,
-        size,
-        flags as sys::hv_memory_flags_t
-    ))
+    call!(sys::hv_vm_map(uva, gpa, size, flags.bits.into()))
 }
 
 /// Unmaps a region in the guest physical address space of the VM
@@ -116,11 +127,7 @@ pub fn vm_unmap(gpa: GPAddr, size: u64) -> Result<(), Error> {
 /// * `size` - Size in bytes of the region to be modified.
 /// * `flags` - New READ, WRITE and EXECUTE permissions of the region.
 pub fn vm_protect(gpa: GPAddr, size: u64, flags: Memory) -> Result<(), Error> {
-    call!(sys::hv_vm_protect(
-        gpa,
-        size,
-        flags as sys::hv_memory_flags_t
-    ))
+    call!(sys::hv_vm_protect(gpa, size, flags.bits.into()))
 }
 
 /// Maps a region in the virtual address space of the current task
@@ -145,7 +152,7 @@ pub fn vm_map_space(
         uva,
         gpa,
         size,
-        flags as sys::hv_memory_flags_t
+        flags.bits.into()
     ))
 }
 
@@ -169,12 +176,7 @@ pub fn vm_unmap_space(asid: Space, gpa: GPAddr, size: u64) -> Result<(), Error> 
 /// * `flags` - New READ, WRITE and EXECUTE permissions of the region.
 #[cfg(feature = "hv_10_15")]
 pub fn vm_protect_space(asid: Space, gpa: GPAddr, size: u64, flags: Memory) -> Result<(), Error> {
-    call!(sys::hv_vm_protect_space(
-        asid,
-        gpa,
-        size,
-        flags as sys::hv_memory_flags_t
-    ))
+    call!(sys::hv_vm_protect_space(asid, gpa, size, flags.bits.into()))
 }
 
 /// Synchronizes guest TSC across all vCPUs.

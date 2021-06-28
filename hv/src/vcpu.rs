@@ -1,7 +1,7 @@
 use std::ffi::c_void;
 use std::mem;
 
-use crate::{call, sys, vmx, x86, Error, Space};
+use crate::{call, sys, Error, Space};
 
 /// Represents a single virtual CPU.
 ///
@@ -81,7 +81,9 @@ impl Drop for Vcpu {
     }
 }
 
-impl x86::VcpuExt for Vcpu {
+use crate::x86;
+
+impl x86::VCpuX86Ext for Vcpu {
     /// Returns the current value of an architectural x86 register of a vCPU.
     fn read_register(&self, reg: x86::Reg) -> Result<u64, Error> {
         let mut value = 0_u64;
@@ -122,40 +124,50 @@ impl x86::VcpuExt for Vcpu {
     }
 }
 
-impl vmx::VcpuExt for Vcpu {
+use crate::vmx;
+
+impl vmx::VCpuVmxExt for Vcpu {
     /// Returns the current value of a VMCS field of a vCPU.
-    fn read_vmcs(&self, field: u32) -> Result<u64, Error> {
+    fn read_vmcs(&self, field: vmx::Vmcs) -> Result<u64, Error> {
         let mut out = 0_u64;
-        call!(sys::hv_vmx_vcpu_read_vmcs(self.0, field, &mut out))?;
+        call!(sys::hv_vmx_vcpu_read_vmcs(self.0, field as u32, &mut out))?;
         Ok(out)
     }
 
     /// Set the value of a VMCS field of a vCPU.
-    fn write_vmcs(&self, field: u32, value: u64) -> Result<(), Error> {
-        call!(sys::hv_vmx_vcpu_write_vmcs(self.0, field, value))
+    fn write_vmcs(&self, field: vmx::Vmcs, value: u64) -> Result<(), Error> {
+        call!(sys::hv_vmx_vcpu_write_vmcs(self.0, field as u32, value))
     }
 
     /// Returns the current value of a shadow VMCS field of a vCPU.
     #[cfg(feature = "hv_10_15")]
-    fn read_shadow_vmcs(&self, field: u32) -> Result<u64, Error> {
+    fn read_shadow_vmcs(&self, field: vmx::Vmcs) -> Result<u64, Error> {
         let mut out = 0_u64;
-        call!(sys::hv_vmx_vcpu_read_shadow_vmcs(self.0, field, &mut out))?;
+        call!(sys::hv_vmx_vcpu_read_shadow_vmcs(
+            self.0,
+            field as u32,
+            &mut out
+        ))?;
         Ok(out)
     }
 
     /// Set the value of a shadow VMCS field of a vCPU.
     #[cfg(feature = "hv_10_15")]
-    fn write_shadow_vmcs(&self, field: u32, value: u64) -> Result<(), Error> {
-        call!(sys::hv_vmx_vcpu_write_shadow_vmcs(self.0, field, value))
+    fn write_shadow_vmcs(&self, field: vmx::Vmcs, value: u64) -> Result<(), Error> {
+        call!(sys::hv_vmx_vcpu_write_shadow_vmcs(
+            self.0,
+            field as u32,
+            value
+        ))
     }
 
     /// Set the access permissions of a shadow VMCS field of a vCPU.
     #[cfg(feature = "hv_10_15")]
-    fn set_shadow_access(&self, field: u32, flags: crate::vmx::ShadowFlags) -> Result<(), Error> {
+    fn set_shadow_access(&self, field: vmx::Vmcs, flags: vmx::ShadowFlags) -> Result<(), Error> {
         call!(sys::hv_vmx_vcpu_set_shadow_access(
             self.0,
-            field,
-            flags as sys::hv_shadow_flags_t
+            field as u32,
+            flags.bits() as u64
         ))
     }
 }

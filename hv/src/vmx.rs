@@ -2,8 +2,6 @@
 
 use crate::{call, sys, Error};
 
-pub type Capacility = sys::hv_vmx_capability_t;
-
 /// Enum type of VMX cabability fields
 #[repr(u32)]
 #[non_exhaustive]
@@ -24,39 +22,39 @@ pub enum Capability {
 }
 
 /// Returns the VMX capabilities of the host processor.
-pub fn read_capability(field: Capacility) -> Result<u64, Error> {
+pub fn read_capability(field: Capability) -> Result<u64, Error> {
     let mut out = 0_u64;
-    call!(sys::hv_vmx_read_capability(field, &mut out))?;
+    call!(sys::hv_vmx_read_capability(field as u32, &mut out))?;
     Ok(out)
 }
 
-#[cfg(feature = "hv_10_15")]
-#[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum ShadowFlags {
-    None = sys::HV_SHADOW_VMCS_NONE,
-    Read = sys::HV_SHADOW_VMCS_READ,
-    Write = sys::HV_SHADOW_VMCS_WRITE,
+bitflags::bitflags! {
+    #[cfg(feature = "hv_10_15")]
+    pub struct ShadowFlags: u32 {
+        const NONE = sys::HV_SHADOW_VMCS_NONE;
+        const READ = sys::HV_SHADOW_VMCS_READ;
+        const WRITE = sys::HV_SHADOW_VMCS_WRITE;
+    }
 }
 
-pub trait VcpuExt {
+pub trait VCpuVmxExt {
     /// Returns the current value of a VMCS field of a vCPU.
-    fn read_vmcs(&self, field: u32) -> Result<u64, Error>;
+    fn read_vmcs(&self, field: Vmcs) -> Result<u64, Error>;
 
     /// Set the value of a VMCS field of a vCPU.
-    fn write_vmcs(&self, field: u32, value: u64) -> Result<(), Error>;
+    fn write_vmcs(&self, field: Vmcs, value: u64) -> Result<(), Error>;
 
     /// Returns the current value of a shadow VMCS field of a vCPU.
     #[cfg(feature = "hv_10_15")]
-    fn read_shadow_vmcs(&self, field: u32) -> Result<u64, Error>;
+    fn read_shadow_vmcs(&self, field: Vmcs) -> Result<u64, Error>;
 
     /// Set the value of a shadow VMCS field of a vCPU.
     #[cfg(feature = "hv_10_15")]
-    fn write_shadow_vmcs(&self, field: u32, value: u64) -> Result<(), Error>;
+    fn write_shadow_vmcs(&self, field: Vmcs, value: u64) -> Result<(), Error>;
 
     /// Set the access permissions of a shadow VMCS field of a vCPU.
     #[cfg(feature = "hv_10_15")]
-    fn set_shadow_access(&self, field: u32, flags: ShadowFlags) -> Result<(), Error>;
+    fn set_shadow_access(&self, field: Vmcs, flags: ShadowFlags) -> Result<(), Error>;
 }
 
 /// Virtual Machine Control Structure (VMCS) Field IDs.

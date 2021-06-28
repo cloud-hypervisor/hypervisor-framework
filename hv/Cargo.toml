@@ -9,6 +9,8 @@ license-file = "../LICENSE"
 readme = "../README.md"
 
 [dependencies]
+bitflags = "1.2"
+
 hv-sys = { path = "../hv-sys", version = "0.1.0" }
 
 [features]
