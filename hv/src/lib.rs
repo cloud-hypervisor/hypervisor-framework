@@ -18,19 +18,19 @@ macro_rules! call {
     ($f:expr) => {{
         let code = unsafe { $f };
         match code {
-            ::hv_sys::hv_return_t_HV_SUCCESS => Ok(()),
+            ::hv_sys::HV_SUCCESS => Ok(()),
             _ => Err(Error::from(code)),
         }
     }};
 }
 
 /// The type of system capabilities.
-#[repr(u64)]
+#[repr(u32)]
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum Capability {
-    VCpuMax = sys::hv_capability_t_HV_CAP_VCPUMAX,
-    AddrSpaceMax = sys::hv_capability_t_HV_CAP_ADDRSPACEMAX,
+    VCpuMax = sys::HV_CAP_VCPUMAX,
+    AddrSpaceMax = sys::HV_CAP_ADDRSPACEMAX,
 }
 
 /// Type of a user virtual address.
@@ -220,12 +220,12 @@ impl fmt::Display for Error {
 impl From<sys::hv_return_t> for Error {
     fn from(value: sys::hv_return_t) -> Self {
         match value {
-            sys::hv_return_t_HV_ERROR => Error::Unsuccessful,
-            sys::hv_return_t_HV_BUSY => Error::Busy,
-            sys::hv_return_t_HV_BAD_ARGUMENT => Error::BadArgument,
-            sys::hv_return_t_HV_NO_RESOURCES => Error::NoResources,
-            sys::hv_return_t_HV_NO_DEVICE => Error::NoDevice,
-            sys::hv_return_t_HV_UNSUPPORTED => Error::Unsupported,
+            sys::HV_ERROR => Error::Unsuccessful,
+            sys::HV_BUSY => Error::Busy,
+            sys::HV_BAD_ARGUMENT => Error::BadArgument,
+            sys::HV_NO_RESOURCES => Error::NoResources,
+            sys::HV_NO_DEVICE => Error::NoDevice,
+            sys::HV_UNSUPPORTED => Error::Unsupported,
             _ => Error::Unknown(value),
         }
     }
