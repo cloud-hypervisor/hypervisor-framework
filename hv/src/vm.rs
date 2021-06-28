@@ -15,7 +15,21 @@ bitflags::bitflags! {
 #[derive(Debug)]
 pub struct Vm;
 
+#[cfg(target_arch = "x86_64")]
+pub type VmOptions = crate::x86::VmOptions;
+
+#[cfg(target_arch = "aarch64")]
+pub type VmOptions = sys::hv_vm_config_t;
+
 impl Vm {
+    /// Creates a VM instance for the current process.
+    pub fn create_vm(options: VmOptions) -> Result<(), Error> {
+        #[cfg(target_arch = "x86_64")]
+        let options = options.bits();
+
+        call!(sys::hv_vm_create(options))
+    }
+
     /// Creates a vCPU instance for the current thread.
     pub fn create_cpu() -> Result<Vcpu, Error> {
         Vcpu::new()

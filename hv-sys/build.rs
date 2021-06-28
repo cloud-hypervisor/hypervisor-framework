@@ -12,6 +12,7 @@ fn main() {
         .allowlist_var("HV.*")
         .allowlist_var("VM.*")
         .allowlist_var("IRQ.*")
+        .derive_default(true)
         .layout_tests(false)
         .generate()
         .expect("Failed to generate bindings")

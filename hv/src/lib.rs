@@ -12,6 +12,8 @@ pub use vm::Vm;
 mod vcpu;
 pub mod vm;
 
+#[cfg(target_arch = "aarch64")]
+pub mod arm64;
 #[cfg(target_arch = "x86_64")]
 pub mod x86;
 

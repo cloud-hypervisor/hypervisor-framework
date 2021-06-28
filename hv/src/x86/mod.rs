@@ -41,9 +41,6 @@ impl Default for VmOptions {
 }
 
 pub trait VmExt {
-    /// Creates a VM instance for the current process.
-    fn create(options: VmOptions) -> Result<(), Error>;
-
     /// Gets the value of capabilities of the system.
     fn capability(cap: Capability) -> Result<u64, Error>;
 
@@ -142,11 +139,6 @@ pub trait VcpuExt {
 }
 
 impl VmExt for Vm {
-    /// Creates a VM instance for the current process.
-    fn create(options: VmOptions) -> Result<(), Error> {
-        call!(sys::hv_vm_create(options.bits()))
-    }
-
     /// Gets the value of capabilities of the system.
     fn capability(cap: Capability) -> Result<u64, Error> {
         let mut out = 0_u64;
