@@ -15,9 +15,9 @@ Build virtualization solutions on top of a lightweight hypervisor using Rust:
 
 This repository contains the following crates:
 | Name | Description | Links |
-| --- | --- |
-| [`hv-sys`](./hv-sys) | Unsafe bindings generated with bindgen | ![Crates.io](https://img.shields.io/crates/v/hv-sys) |
-| [`hv`](./hv) | High level API to access Hypervisor Framework | ![Crates.io](https://img.shields.io/crates/v/hv) |
+| --- | --- | --- |
+| [`hv-sys`](./hv-sys) | Unsafe bindings generated with bindgen | [![Crates.io](https://img.shields.io/crates/v/hv-sys)](https://img.shields.io/crates/v/hv-sys) |
+| [`hv`](./hv) | High level API to access Hypervisor Framework | [![Crates.io](https://img.shields.io/crates/v/hv)](https://img.shields.io/crates/v/hv) |
 
 ### Current list of things to do:
 - Make high level API safer.
