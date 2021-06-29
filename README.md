@@ -1,8 +1,8 @@
 # hv
 
 [![CI](https://github.com/mxpv/hv/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mxpv/hv/actions/workflows/ci.yml)
-![GitHub](https://img.shields.io/github/license/mxpv/hv)
-![docs.rs](https://img.shields.io/docsrs/hv)
+[![GitHub](https://img.shields.io/github/license/mxpv/hv)](https://github.com/mxpv/hv/blob/main/LICENSE)
+[![docs.rs](https://img.shields.io/docsrs/hv)](https://docs.rs/hv/)
 
 `hv` is a high level Rust bindings for Hypervisor Framework.
 
@@ -16,8 +16,8 @@ Build virtualization solutions on top of a lightweight hypervisor using Rust:
 This repository contains the following crates:
 | Name | Description | Links |
 | --- | --- | --- |
-| [`hv-sys`](./hv-sys) | Unsafe bindings generated with bindgen | [![Crates.io](https://img.shields.io/crates/v/hv-sys)](https://img.shields.io/crates/v/hv-sys) |
-| [`hv`](./hv) | High level API to access Hypervisor Framework | [![Crates.io](https://img.shields.io/crates/v/hv)](https://img.shields.io/crates/v/hv) |
+| [`hv-sys`](./hv-sys) | Unsafe bindings generated with bindgen | [![Crates.io](https://img.shields.io/crates/v/hv-sys)](https://crates.io/crates/hv-sys) |
+| [`hv`](./hv) | High level API to access Hypervisor Framework | [![Crates.io](https://img.shields.io/crates/v/hv)](https://crates.io/crates/hv) |
 
 ### Current list of things to do:
 - Make high level API safer.

@@ -1,9 +1,9 @@
 # hv
 
 [![CI](https://github.com/mxpv/hv/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mxpv/hv/actions/workflows/ci.yml)
-![Crates.io](https://img.shields.io/crates/v/hv)
+[![Crates.io](https://img.shields.io/crates/v/hv)](https://crates.io/crates/hv)
 ![Crates.io](https://img.shields.io/crates/l/hv)
-![docs.rs](https://img.shields.io/docsrs/hv)
+[![docs.rs](https://img.shields.io/docsrs/hv)](https://docs.rs/hv/)
 
 `hv` is a high level Rust bindings for Hypervisor Framework.
 
