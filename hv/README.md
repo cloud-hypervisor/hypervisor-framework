@@ -9,18 +9,7 @@ Build virtualization solutions on top of a lightweight hypervisor using Rust:
 - Supports Apple Silicon.
 - Rusty API.
 
-This repository contains the following crates:
-| Name | Description |
-| --- | --- |
-| [hv-sys](./hv-sys) | Unsafe bindings generated with bindgen |
-| [hv](./hv) | High level API to access Hypervisor Framework |
-
-[Apple Documentation](https://developer.apple.com/documentation/hypervisor)
-
-### Current list of things to do:
-- Make high level API safer.
-- Expand documentation.
-- Add more examples.
+Please also see the [repository](https://github.com/mxpv/hv) for latest changes and updates.
 
 ## Requirements
 
@@ -48,6 +37,10 @@ Developed and tested on latest stable Rust (1.53.0+).
 
 Be sure to have [Xcode](https://developer.apple.com/xcode/) installed and don't forget to `xcode-select --install`,
 otherwise `bindgen` may fail to find Hypervisor headers.
+
+## Usage
+
+This crate uses [hv-sys]()
 
 ## Example
 
