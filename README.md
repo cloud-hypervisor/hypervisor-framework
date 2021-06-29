@@ -4,6 +4,8 @@
 
 `hv` is a high level Rust bindings for Hypervisor Framework.
 
+[Apple Documentation](https://developer.apple.com/documentation/hypervisor)
+
 Build virtualization solutions on top of a lightweight hypervisor using Rust:
 - Full Hypervisor Framework support.
 - Supports Apple Silicon.
@@ -12,10 +14,8 @@ Build virtualization solutions on top of a lightweight hypervisor using Rust:
 This repository contains the following crates:
 | Name | Description |
 | --- | --- |
-| [hv-sys](./hv-sys) | Unsafe bindings generated with bindgen |
-| [hv](./hv) | High level API to access Hypervisor Framework |
-
-[Apple Documentation](https://developer.apple.com/documentation/hypervisor)
+| [`hv-sys`](./hv-sys) | Unsafe bindings generated with bindgen |
+| [`hv`](./hv) | High level API to access Hypervisor Framework |
 
 ### Current list of things to do:
 - Make high level API safer.
