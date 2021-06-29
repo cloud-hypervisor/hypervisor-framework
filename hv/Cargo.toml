@@ -28,3 +28,7 @@ name = "caps"
 # Apple Silicon
 [[example]]
 name = "as"
+
+# See https://docs.rs/about/metadata
+[package.metadata.docs.rs]
+targets = ["x86_64-apple-darwin", "aarch64-apple-darwin"]

@@ -12,3 +12,6 @@ categories = ["os::macos-apis", "api-bindings", "hardware-support"]
 
 [build-dependencies]
 bindgen = "0.58"
+
+[package.metadata.docs.rs]
+targets = ["x86_64-apple-darwin", "aarch64-apple-darwin"]
