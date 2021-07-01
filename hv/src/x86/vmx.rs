@@ -61,13 +61,13 @@ impl VCpuVmxExt for Vcpu {
     /// Returns the current value of a VMCS field of a vCPU.
     fn read_vmcs(&self, field: Vmcs) -> Result<u64, Error> {
         let mut out = 0_u64;
-        call!(sys::hv_vmx_vcpu_read_vmcs(self.cpu, field as u32, &mut out))?;
+        call!(sys::hv_vmx_vcpu_read_vmcs(self.id, field as u32, &mut out))?;
         Ok(out)
     }
 
     /// Set the value of a VMCS field of a vCPU.
     fn write_vmcs(&self, field: Vmcs, value: u64) -> Result<(), Error> {
-        call!(sys::hv_vmx_vcpu_write_vmcs(self.cpu, field as u32, value))
+        call!(sys::hv_vmx_vcpu_write_vmcs(self.id, field as u32, value))
     }
 
     /// Returns the current value of a shadow VMCS field of a vCPU.
@@ -75,7 +75,7 @@ impl VCpuVmxExt for Vcpu {
     fn read_shadow_vmcs(&self, field: Vmcs) -> Result<u64, Error> {
         let mut out = 0_u64;
         call!(sys::hv_vmx_vcpu_read_shadow_vmcs(
-            self.cpu,
+            self.id,
             field as u32,
             &mut out
         ))?;
@@ -86,7 +86,7 @@ impl VCpuVmxExt for Vcpu {
     #[cfg(feature = "hv_10_15")]
     fn write_shadow_vmcs(&self, field: Vmcs, value: u64) -> Result<(), Error> {
         call!(sys::hv_vmx_vcpu_write_shadow_vmcs(
-            self.cpu,
+            self.id,
             field as u32,
             value
         ))
@@ -96,7 +96,7 @@ impl VCpuVmxExt for Vcpu {
     #[cfg(feature = "hv_10_15")]
     fn set_shadow_access(&self, field: Vmcs, flags: ShadowFlags) -> Result<(), Error> {
         call!(sys::hv_vmx_vcpu_set_shadow_access(
-            self.cpu,
+            self.id,
             field as u32,
             flags.bits() as u64
         ))

@@ -2,16 +2,14 @@
 fn main() -> Result<(), hv::Error> {
     use hv::x86::{Capability, VmExt, VmOptions};
 
-    hv::Vm::create_vm(VmOptions::default())?;
+    let vm = hv::Vm::new(VmOptions::default())?;
 
-    println!("Max vCPUs: {}", hv::Vm::capability(Capability::VcpuMax)?);
+    println!("Max vCPUs: {}", vm.capability(Capability::VcpuMax)?);
 
     println!(
         "Available address spaces: {}",
-        hv::Vm::capability(Capability::AddrSpaceMax)?
+        vm.capability(Capability::AddrSpaceMax)?
     );
-
-    hv::Vm::destroy()?;
 
     Ok(())
 }

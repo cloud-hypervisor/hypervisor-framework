@@ -1,14 +1,22 @@
-use crate::{call, sys, Error};
+use crate::{call, sys, Error, Vm};
+use std::sync::Arc;
+
+/// The type that describes a vCPU ID on Intel.
+#[cfg(target_arch = "x86_64")]
+pub type Id = sys::hv_vcpuid_t;
+
+/// The type that describes a vCPU ID on Apple Silicon.
+#[cfg(target_arch = "aarch64")]
+pub type Id = sys::hv_vcpu_t;
 
 /// Represents a single virtual CPU.
 ///
 /// [Vcpu] object is not thread safe, all calls must be performed from
 /// the owning thread.
 pub struct Vcpu {
-    #[cfg(target_arch = "x86_64")]
-    pub(crate) cpu: sys::hv_vcpuid_t,
-    #[cfg(target_arch = "aarch64")]
-    pub(crate) cpu: sys::hv_vcpu_t,
+    #[allow(dead_code)] // VM instance must outlive CPU in order to deallocate things properly.
+    vm: Arc<Vm>,
+    pub(crate) id: Id,
     #[cfg(target_arch = "aarch64")]
     /// The pointer to the vCPU exit information.
     /// The function `hv_vcpu_run` updates this structure on return.
@@ -18,24 +26,24 @@ pub struct Vcpu {
 
 impl Vcpu {
     /// Creates a vCPU instance for the current thread.
-    pub(crate) fn new() -> Result<Vcpu, Error> {
+    pub(crate) fn new(vm: Arc<Vm>) -> Result<Vcpu, Error> {
         #[cfg(target_arch = "x86_64")]
         {
-            let mut cpu = 0;
-            call!(sys::hv_vcpu_create(&mut cpu, 0))?;
-            Ok(Vcpu { cpu })
+            let mut id = 0;
+            call!(sys::hv_vcpu_create(&mut id, 0))?;
+            Ok(Vcpu { vm, id })
         }
 
         #[cfg(target_arch = "aarch64")]
         {
-            let mut cpu = 0;
+            let mut id = 0;
             let mut exit = std::ptr::null_mut();
             call!(sys::hv_vcpu_create(
-                &mut cpu,
+                &mut id,
                 &mut exit,
                 std::ptr::null_mut()
             ))?;
-            Ok(Vcpu { cpu, exit })
+            Ok(Vcpu { vm, id, exit })
         }
     }
 
@@ -54,20 +62,26 @@ impl Vcpu {
     ///
     /// [1]: https://developer.apple.com/documentation/hypervisor/1441231-hv_vcpu_run
     pub fn run(&self) -> Result<(), Error> {
-        call!(sys::hv_vcpu_run(self.cpu))
+        call!(sys::hv_vcpu_run(self.id))
     }
 
     /// Returns the cumulative execution time of a vCPU in nanoseconds.
     pub fn exec_time(&self) -> Result<u64, Error> {
         let mut out = 0_u64;
-        call!(sys::hv_vcpu_get_exec_time(self.cpu, &mut out))?;
+        call!(sys::hv_vcpu_get_exec_time(self.id, &mut out))?;
         Ok(out)
+    }
+
+    /// Returns the underlying vCPU ID.
+    #[inline]
+    pub fn id(&self) -> Id {
+        self.id
     }
 }
 
+/// Destroys the vCPU instance associated with the current thread.
 impl Drop for Vcpu {
-    /// Destroys the vCPU instance associated with the current thread.
     fn drop(&mut self) {
-        let _ = call!(sys::hv_vcpu_destroy(self.cpu));
+        call!(sys::hv_vcpu_destroy(self.id)).unwrap()
     }
 }

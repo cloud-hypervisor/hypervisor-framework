@@ -28,6 +28,8 @@ const GUEST_RESULT_ADDR: usize = GUEST_ADDR + RESULT_OFFSET;
 #[cfg(target_arch = "aarch64")]
 use hv::arm64::{Reg, VcpuExt};
 
+use std::sync::Arc;
+
 #[cfg(target_arch = "aarch64")]
 fn main() -> Result<(), hv::Error> {
     let load_addr = unsafe {
@@ -50,19 +52,18 @@ fn main() -> Result<(), hv::Error> {
     }
 
     // Init VM
-    hv::Vm::create_vm(std::ptr::null_mut()).expect("Failed to create VM");
+    let vm = Arc::new(hv::Vm::new(std::ptr::null_mut())?);
 
     // Initialize guest memory
-    hv::Vm::map(
+    vm.map(
         load_addr,
         GUEST_ADDR as _,
         MEM_SIZE as _,
         hv::Memory::READ | hv::Memory::WRITE | hv::Memory::EXEC,
-    )
-    .expect("Failed to map guest memory");
+    )?;
 
     // Create VCPU
-    let cpu = hv::Vm::create_cpu().expect("Failed to create CPU");
+    let cpu = vm.create_cpu()?;
 
     // Set regs
     cpu.set_reg(Reg::PC, GUEST_ADDR as _)
@@ -85,10 +86,6 @@ fn main() -> Result<(), hv::Error> {
 
     println!("Result: {}", result);
     assert_eq!(result, 3);
-
-    drop(cpu);
-
-    hv::Vm::destroy()?;
 
     Ok(())
 }

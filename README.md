@@ -11,7 +11,7 @@
 Build virtualization solutions on top of a lightweight hypervisor using Rust:
 - Full Hypervisor Framework support.
 - Supports Apple Silicon.
-- Rusty API.
+- Safe Rust API.
 
 This repository contains the following crates:
 | Name | Description | Links |
@@ -56,21 +56,20 @@ otherwise `bindgen` may fail to find Hypervisor headers.
 Here is basic "Hello world" example on Apple Silicon:
 ```rust
 // Init VM
-hv::Vm::create_vm(ptr::null_mut())?;
+let vm = Arc::new(hv::Vm::new(std::ptr::null_mut())?);
 
 // Initialize guest memory
-hv::Vm::map(load_addr, GUEST_ADDR as _, MEM_SIZE as _, hv::Memory::READ)?;
+vm.map(load_addr, GUEST_ADDR, MEM_SIZE, hv::Memory::READ)?;
 
 // Create VCPU
-let cpu = hv::Vm::create_cpu()?;
+let cpu = vm.create_cpu()?;
 
 // Set regs
-cpu.set_reg(Reg::PC, GUEST_ADDR)?;
-cpu.set_reg(Reg::X1, GUEST_RESULT_ADDR)?;
+cpu.set_reg(Reg::PC, GUEST_ADDR)?
+cpu.set_reg(Reg::X1, GUEST_RESULT_ADDR)?
 
-// Run CPU
 loop {
-    cpu.run()?;
+    cpu.run().expect("Failed to run CPU");
 
     let info = cpu.exit_info();
     println!("{:?}", info);
