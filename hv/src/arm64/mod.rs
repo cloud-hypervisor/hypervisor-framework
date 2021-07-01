@@ -13,6 +13,45 @@ pub enum InterruptType {
     FIQ = sys::hv_interrupt_type_t_HV_INTERRUPT_TYPE_FIQ,
 }
 
+/// Events that can trigger a guest exit to the VMM.
+#[repr(u32)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum ExitReason {
+    /// Asynchronous exit requested explicitly by `hv_vcpus_exit` call.
+    Canceled = sys::hv_exit_reason_t_HV_EXIT_REASON_CANCELED,
+    /// Synchronous exception to EL2 triggered by the guest.
+    Exception = sys::hv_exit_reason_t_HV_EXIT_REASON_EXCEPTION,
+    /// ARM Generic VTimer became pending since the last hv_vcpu_run() call
+    /// returned. The caller is expected to make the interrupt corresponding to
+    /// the VTimer pending in the guest's interrupt controller.
+    ///
+    /// This exit automatically sets the VTimer mask.
+    /// The VCPU will not exit with this status again until after the mask is cleared
+    /// with hv_vcpu_set_vtimer_mask(), which should be called during a trap of
+    /// the EOI for the guest's VTimer interrupt handler.
+    VTimerActivated = sys::hv_exit_reason_t_HV_EXIT_REASON_VTIMER_ACTIVATED,
+    /// Unable to determine exit reason: this should not happen under normal operation.
+    Unknown = sys::hv_exit_reason_t_HV_EXIT_REASON_UNKNOWN,
+}
+
+impl Default for ExitReason {
+    fn default() -> Self {
+        ExitReason::Unknown
+    }
+}
+
+impl From<sys::hv_exit_reason_t> for ExitReason {
+    fn from(value: sys::hv_exit_reason_t) -> Self {
+        match value {
+            sys::hv_exit_reason_t_HV_EXIT_REASON_CANCELED => ExitReason::Canceled,
+            sys::hv_exit_reason_t_HV_EXIT_REASON_EXCEPTION => ExitReason::Exception,
+            sys::hv_exit_reason_t_HV_EXIT_REASON_VTIMER_ACTIVATED => ExitReason::VTimerActivated,
+            sys::hv_exit_reason_t_HV_EXIT_REASON_UNKNOWN => ExitReason::Unknown,
+            _ => ExitReason::Unknown,
+        }
+    }
+}
+
 /// Contains information about an exit from the vcpu to the host.
 pub type VcpuExit = sys::hv_vcpu_exit_t;
 
