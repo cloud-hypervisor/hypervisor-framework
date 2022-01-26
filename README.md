@@ -1,7 +1,7 @@
 # hv
 
-[![CI](https://github.com/mxpv/hv/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mxpv/hv/actions/workflows/ci.yml)
-[![GitHub](https://img.shields.io/github/license/mxpv/hv)](https://github.com/mxpv/hv/blob/main/LICENSE)
+[![CI](https://github.com/cloud-hypervisor/hypervisor-framework/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/cloud-hypervisor/hypervisor-framework/actions/workflows/ci.yml)
+[![GitHub](https://img.shields.io/github/license/cloud-hypervisor/hypervisor-framework)](https://github.com/cloud-hypervisor/hypervisor-framework/blob/main/LICENSE)
 [![docs.rs](https://img.shields.io/docsrs/hv)](https://docs.rs/hv/)
 
 `hv` is a high level Rust bindings for Hypervisor Framework.

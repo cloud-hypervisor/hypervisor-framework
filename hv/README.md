@@ -1,6 +1,6 @@
 # hv
 
-[![CI](https://github.com/mxpv/hv/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mxpv/hv/actions/workflows/ci.yml)
+[![CI](https://github.com/cloud-hypervisor/hypervisor-framework/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/cloud-hypervisor/hypervisor-framework/actions/workflows/ci.yml)
 [![Crates.io](https://img.shields.io/crates/v/hv)](https://crates.io/crates/hv)
 ![Crates.io](https://img.shields.io/crates/l/hv)
 [![docs.rs](https://img.shields.io/docsrs/hv)](https://docs.rs/hv/)
@@ -12,7 +12,7 @@ Build virtualization solutions on top of a lightweight hypervisor using Rust:
 - Supports Apple Silicon.
 - Safe Rust API.
 
-Please also see the [repository](https://github.com/mxpv/hv) for latest changes and updates.
+Please also see the [repository](https://github.com/cloud-hypervisor/hypervisor-framework) for latest changes and updates.
 
 ## Requirements
 
