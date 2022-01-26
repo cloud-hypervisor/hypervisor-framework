@@ -28,10 +28,10 @@ const GUEST_RESULT_ADDR: usize = GUEST_ADDR + RESULT_OFFSET;
 #[cfg(target_arch = "aarch64")]
 use hv::arm64::{Reg, VcpuExt};
 
-use std::sync::Arc;
-
 #[cfg(target_arch = "aarch64")]
 fn main() -> Result<(), hv::Error> {
+    use std::sync::Arc;
+
     let load_addr = unsafe {
         libc::mmap(
             std::ptr::null_mut(),
