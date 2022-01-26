@@ -1,6 +1,6 @@
 [package]
 name = "hv-sys"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2018"
 description = "Unsafe bindings for Hypervisor Framework generated with bindgen"
 authors = ["Maksym Pavlenko <pavlenko.maksym@gmail.com>", "The Cloud Hypervisor Authors"]
