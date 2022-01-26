@@ -45,6 +45,7 @@ impl Default for VmOptions {
 #[cfg(feature = "hv_10_15")]
 #[derive(Debug)]
 pub struct Space {
+    #[allow(dead_code)] // Keep handle alive as long as `Space` exists.
     vm: Arc<Vm>,
     id: SpaceId,
 }
