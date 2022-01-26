@@ -1,6 +1,6 @@
 # hv-sys
 
-[![CI](https://github.com/mxpv/hv/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mxpv/hv/actions/workflows/ci.yml)
+[![CI](https://github.com/cloud-hypervisor/hypervisor-framework/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/cloud-hypervisor/hypervisor-framework/actions/workflows/ci.yml)
 [![Crates.io](https://img.shields.io/crates/v/hv-sys)](https://crates.io/crates/hv-sys)
 ![Crates.io](https://img.shields.io/crates/l/hv-sys)
 
@@ -9,7 +9,7 @@ Unsafe `-sys` crate with raw, unsafe bindings for [Hypervisor Framework](https:/
 Please don't use this crate directly, have a look on [hv](https://crates.io/crates/hv) crate instead.
 It offers high level safer Rust API to access Hypervisor Framework.
 
-Also please see the [repository](https://github.com/mxpv/hv) for ongoing work, questions, submit bugs, etc.
+Also please see the [repository](https://github.com/cloud-hypervisor/hypervisor-framework) for ongoing work, questions, submit bugs, etc.
 
 ## Usage
 
