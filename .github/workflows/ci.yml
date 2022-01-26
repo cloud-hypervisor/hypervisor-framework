@@ -7,9 +7,7 @@ jobs:
     runs-on: macos-10.15
     steps:
       - uses: actions/checkout@v2
-      - run: rustup update stable
-      - run: rustup component add rustfmt clippy
+      - run: cargo check --examples --tests --all-targets
       - run: cargo fmt --all -- --check --files-with-diff
-      - run: cargo clippy --all-features -- -D warnings
+      - run: cargo clippy --all-targets --all-features -- -D warnings
       - run: cargo test --all-features
-      - run: cargo check
