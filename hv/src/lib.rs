@@ -26,10 +26,10 @@ pub type GPAddr = u64;
 
 bitflags::bitflags! {
     /// Guest physical memory region permissions.
-    pub struct Memory: u32 {
-        const READ = sys::HV_MEMORY_READ;
-        const WRITE = sys::HV_MEMORY_WRITE;
-        const EXEC = sys::HV_MEMORY_EXEC;
+    pub struct Memory: u64 {
+        const READ = 1 << 0;
+        const WRITE = 1 << 1;
+        const EXEC = 1 << 2;
     }
 }
 
@@ -37,6 +37,7 @@ bitflags::bitflags! {
 #[macro_export]
 macro_rules! call {
     ($f:expr) => {{
+        #[allow(clippy::macro_metavars_in_unsafe)]
         let code = unsafe { $f };
         match code {
             0 => Ok(()),
@@ -70,7 +71,7 @@ impl fmt::Display for Error {
             Error::NoResources => write!(f, "The operation was unsuccessful because the host had no resources available to complete the request"),
             Error::NoDevice => write!(f, "The operation was unsuccessful because no VM or vCPU was available"),
             Error::Unsupported => write!(f, "The operation requested isn’t supported by the hypervisor"),
-            Error::Unknown(code) => write!(f, "Error code: {}", *code as i32),
+            Error::Unknown(code) => write!(f, "Error code: {}", *code),
         }
     }
 }

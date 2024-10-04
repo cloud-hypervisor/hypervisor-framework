@@ -4,7 +4,10 @@ on: [push, pull_request]
 jobs:
   checks:
     name: Checks
-    runs-on: macos-10.15
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-14, macos-15]
     steps:
       - uses: actions/checkout@v2
       - run: cargo check --examples --tests --all-targets

@@ -72,6 +72,7 @@ fn main() -> Result<(), hv::Error> {
     cpu.set_reg(Reg::X1, GUEST_RESULT_ADDR as _)
         .expect("Failed to set X1");
 
+    #[allow(clippy::never_loop)]
     loop {
         cpu.run().expect("Failed to run CPU");
 

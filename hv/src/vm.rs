@@ -31,9 +31,15 @@ impl Vm {
     /// In order to create child objects (`Vcpu`, `Space`, etc), this object must be wrapped
     /// with [Arc].
     ///
+    #[allow(clippy::not_unsafe_ptr_arg_deref)]
     pub fn new(options: Options) -> Result<Vm, Error> {
         #[cfg(target_arch = "x86_64")]
         let options = options.bits();
+
+        #[cfg(not(target_arch = "x86_64"))]
+        if options.is_null() {
+            return Err(Error::BadArgument);
+        }
 
         call!(sys::hv_vm_create(options))?;
         Ok(Vm)
