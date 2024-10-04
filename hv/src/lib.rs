@@ -37,6 +37,7 @@ bitflags::bitflags! {
 #[macro_export]
 macro_rules! call {
     ($f:expr) => {{
+        #[allow(clippy::macro_metavars_in_unsafe)]
         let code = unsafe { $f };
         match code {
             0 => Ok(()),
