@@ -26,10 +26,10 @@ pub type GPAddr = u64;
 
 bitflags::bitflags! {
     /// Guest physical memory region permissions.
-    pub struct Memory: u32 {
-        const READ = sys::HV_MEMORY_READ;
-        const WRITE = sys::HV_MEMORY_WRITE;
-        const EXEC = sys::HV_MEMORY_EXEC;
+    pub struct Memory: u64 {
+        const READ = 1 << 0;
+        const WRITE = 1 << 1;
+        const EXEC = 1 << 2;
     }
 }
 
