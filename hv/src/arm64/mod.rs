@@ -15,7 +15,7 @@ pub enum InterruptType {
 
 /// Events that can trigger a guest exit to the VMM.
 #[repr(u32)]
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Default, Copy, Clone, Eq, PartialEq)]
 pub enum ExitReason {
     /// Asynchronous exit requested explicitly by `hv_vcpus_exit` call.
     Canceled = sys::hv_exit_reason_t_HV_EXIT_REASON_CANCELED,
@@ -31,13 +31,8 @@ pub enum ExitReason {
     /// the EOI for the guest's VTimer interrupt handler.
     VTimerActivated = sys::hv_exit_reason_t_HV_EXIT_REASON_VTIMER_ACTIVATED,
     /// Unable to determine exit reason: this should not happen under normal operation.
+    #[default]
     Unknown = sys::hv_exit_reason_t_HV_EXIT_REASON_UNKNOWN,
-}
-
-impl Default for ExitReason {
-    fn default() -> Self {
-        ExitReason::Unknown
-    }
 }
 
 impl From<sys::hv_exit_reason_t> for ExitReason {

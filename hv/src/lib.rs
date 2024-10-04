@@ -70,7 +70,7 @@ impl fmt::Display for Error {
             Error::NoResources => write!(f, "The operation was unsuccessful because the host had no resources available to complete the request"),
             Error::NoDevice => write!(f, "The operation was unsuccessful because no VM or vCPU was available"),
             Error::Unsupported => write!(f, "The operation requested isn’t supported by the hypervisor"),
-            Error::Unknown(code) => write!(f, "Error code: {}", *code as i32),
+            Error::Unknown(code) => write!(f, "Error code: {}", *code),
         }
     }
 }
